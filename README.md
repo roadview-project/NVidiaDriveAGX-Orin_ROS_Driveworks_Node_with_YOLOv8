@@ -273,38 +273,37 @@ FINALLY this should work now
 ```bash
 # Copy built packages to target
 scp -r ~/drive-ros/catkin_ws/install_isolated nvidia@<target-ip>:~
-
-# Copy YOLO models (prepare models separately using TensorRT)
-scp models/*.engine nvidia@<target-ip>:~/models/
 ```
 
 #### Install Dependencies on Target
+we need to install the requirements of python AND the ros 1 in the target device
+to do that follow the steps that we used to install ros in the QEMU (see above if you succeded there YOU WILL SUCCEEEED HEEREEE!!)
 
 ```bash
-# SSH into target
-ssh nvidia@<target-ip>
-
-# Install ROS packages
-sudo apt update
-sudo apt install -y ros-noetic-ros-base ros-noetic-cv-bridge \
-  ros-noetic-image-view ros-noetic-rviz
-
-# Install Python dependencies for 3D tracking
-pip3 install motpy numpy scipy scikit-learn filterpy
-
-# Install additional libraries
-sudo apt install -y libboost-all-dev libtinyxml-dev libtinyxml2-dev \
-  liblz4-dev libbz2-dev libapr1 libaprutil1 libconsole-bridge-dev \
-  libpoco-dev liblog4cxx-dev
-
-# Remove conflicting library (if needed - see NVIDIA forums)
-sudo rm /usr/lib/libxerces-c*.so || true
-
 # Setup ROS environment
-echo "source ~/install_isolated/setup.bash" >> ~/.bashrc
-source ~/.bashrc
+source ~/install_isolated/setup.bash"
+roslaunch drive_yolo yolo_driveworks.launch
+```
+this will run the code with the default camera parameters i put in when i was using. I was using the Entron Camera F008.
+
+**IMPORTANT** the ENGINE is **drive OS speficfic**. that means that if you want to use it in other version you need to recreate the engine based on the onnx file.
+to do that is simple simply use **ON THE DRIVE Orin**
+```bash
+/usr/src/tensorrt/bin/trtexec \
+  --onnx=model.onnx \
+  --saveEngine=model_fp16.engine \
+  --fp16 \
+  --workspace=4096 \
 ```
 
+This runs at 30fps with yolo detections! ~faster then the nvidia rosnode (runs at 22fps) hehe cheeky no?~
+
+
+there are other nodes like sensor fusion but its 2.5D
+so dont get to excited
+
+
+This bottom part was AI generated thanks Claude for the help linking libraries and writing this comprehensive readme!
 ## Architecture
 
 ```
@@ -846,9 +845,17 @@ geometry_msgs/Point predicted_position_1s
 
 ## Acknowledgments
 
+Co-funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or European Climate, Infrastructure and Environment Executive Agency (CINEA). Neither the European Union nor the granting authority can be held responsible for them. Project grant no. 101069576. UK participants in this project are co-funded by Innovate UK under contract no.10045139. Swiss participants in this project are co-funded by the Swiss State Secretariat for Education, Research and Innovation (SERI) under contract no. 22.00123.
+
+I would also like to ack:
 - NVIDIA Corporation for DriveWorks SDK
 - Open Robotics for ROS framework
 - Ultralytics for YOLO models
 
-
+# Final Words
+please let me know if it works for you im curious. 
+I wish this helps you to develop for the NVIDIA DRIVE AGX ORIN WITH TENSORRT 
+hugs
+Yuri
+PS: if you use opset above 13 tensorrt will be upset
 
