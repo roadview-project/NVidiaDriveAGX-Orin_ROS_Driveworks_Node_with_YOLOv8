@@ -1,0 +1,32 @@
+<launch>
+    <!-- Standalone RViz Visualization Node for Tracked Objects -->
+    <!-- Use this if you want to run the visualizer separately from the tracking node -->
+
+    <arg name="show_velocity_vectors" default="true"/>
+    <arg name="show_track_ids" default="true"/>
+    <arg name="show_positions" default="true"/>
+    <arg name="show_predicted_positions" default="true"/>
+    <arg name="velocity_scale" default="2.0"/>  <!-- Scale velocity arrows for better visibility -->
+    <arg name="min_velocity_display" default="0.5"/>  <!-- Only show moving objects (m/s) -->
+    <arg name="frame_id" default="camera"/>
+    <arg name="use_class_colors" default="true"/>
+    <arg name="launch_rviz" default="true"/>
+
+    <node name="tracking_rviz_visualizer" pkg="drive_yolo" type="tracking_rviz_visualizer.py"
+          output="screen">
+        <param name="show_velocity_vectors" value="$(arg show_velocity_vectors)"/>
+        <param name="show_track_ids" value="$(arg show_track_ids)"/>
+        <param name="show_positions" value="$(arg show_positions)"/>
+        <param name="show_predicted_positions" value="$(arg show_predicted_positions)"/>
+        <param name="velocity_scale" value="$(arg velocity_scale)"/>
+        <param name="min_velocity_display" value="$(arg min_velocity_display)"/>
+        <param name="frame_id" value="$(arg frame_id)"/>
+        <param name="use_class_colors" value="$(arg use_class_colors)"/>
+    </node>
+
+    <!-- Launch RViz -->
+    <node if="$(arg launch_rviz)" name="rviz" pkg="rviz" type="rviz"
+          args="-d $(find drive_yolo)/rviz/tracking_visualization.rviz"
+          required="false"/>
+
+</launch>

@@ -1,0 +1,51 @@
+<launch>
+    <!--
+    Pointcloud Camera Overlay Launch File
+
+    This launch file sets up the necessary components to overlay pointcloud data
+    onto the camera view in RViz. It includes:
+    - TF transformations from M8VIL_TFs.launch (car frame, sensors)
+    - Camera calibration info publisher
+    - Camera intrinsic parameters from lidar_camera_fusion.launch
+
+    Usage:
+    1. Launch this file
+    2. Open RViz
+    3. Add a Camera display and set the Image Topic to your camera image topic
+    4. Add a PointCloud2 display and set:
+       - Topic to your lidar pointcloud topic (e.g., /invz_summation_reflection)
+       - Style to "Points" or "Spheres"
+       - Size as desired
+       - Transform should use the TF tree automatically
+    5. Set the Fixed Frame to "car_rear_axle" or "camera_entron"
+    -->
+
+    <!-- Include TF transformations for all sensors -->
+    <include file="$(find drive_yolo)/launch/M8VIL_TFs.launch" />
+
+    <!-- Camera Info Publisher -->
+    <node name="camera_info_publisher" pkg="drive_yolo" type="drive_yolo_camera_info_publisher" output="screen">
+        <!-- Camera frame -->
+        <param name="camera_frame" value="camera_entron" />
+
+        <!-- Image dimensions -->
+        <param name="image_width" value="3848" />
+        <param name="image_height" value="2168" />
+
+        <!-- Publishing rate (Hz) -->
+        <param name="publish_rate" value="30.0" />
+
+        <!-- Camera matrix (3x3 in row-major order: fx, 0, cx, 0, fy, cy, 0, 0, 1) -->
+        <!-- From lidar_camera_fusion.launch -->
+        <rosparam param="camera_matrix">[3145.24132, 0.0, 1887.68485, 0.0, 3166.08502, 990.62304, 0.0, 0.0, 1.0]</rosparam>
+
+        <!-- Distortion coefficients (k1, k2, p1, p2, k3) -->
+        <!-- From lidar_camera_fusion.launch -->
+        <rosparam param="distortion_coefficients">[-0.298671, 0.087807, 0.000383, 0.000551, 0.000000]</rosparam>
+    </node>
+
+    <!-- Optional: Launch RViz with pre-configured setup -->
+    <!-- Uncomment to automatically launch RViz -->
+    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find drive_yolo)/rviz/pointcloud_overlay.rviz" /> -->
+
+</launch>

@@ -1,0 +1,37 @@
+<launch>
+    <!-- Include the existing motpy tracking launch -->
+    <include file="$(find drive_yolo)/launch/motpy_tracking.launch">
+        <!-- You can override parameters here if needed -->
+        <arg name="enable_rviz_visualization" value="true"/>
+        <arg name="show_velocity_vectors" value="true"/>
+    </include>
+
+    <!-- RViz Visualization Node for Tracked Objects -->
+    <arg name="show_velocity_vectors" default="true"/>
+    <arg name="show_track_ids" default="true"/>
+    <arg name="show_positions" default="true"/>
+    <arg name="show_predicted_positions" default="true"/>
+    <arg name="velocity_scale" default="2.0"/>  <!-- Scale velocity arrows for visibility -->
+    <arg name="min_velocity_display" default="0.5"/>  <!-- Only show objects moving faster than this (m/s) -->
+    <arg name="frame_id" default="camera"/>
+    <arg name="use_class_colors" default="true"/>
+
+    <node name="tracking_rviz_visualizer" pkg="drive_yolo" type="tracking_rviz_visualizer.py"
+          output="screen">
+        <param name="show_velocity_vectors" value="$(arg show_velocity_vectors)"/>
+        <param name="show_track_ids" value="$(arg show_track_ids)"/>
+        <param name="show_positions" value="$(arg show_positions)"/>
+        <param name="show_predicted_positions" value="$(arg show_predicted_positions)"/>
+        <param name="velocity_scale" value="$(arg velocity_scale)"/>
+        <param name="min_velocity_display" value="$(arg min_velocity_display)"/>
+        <param name="frame_id" value="$(arg frame_id)"/>
+        <param name="use_class_colors" value="$(arg use_class_colors)"/>
+    </node>
+
+    <!-- Optional: Launch RViz with a predefined config -->
+    <arg name="launch_rviz" default="false"/>
+    <node if="$(arg launch_rviz)" name="rviz" pkg="rviz" type="rviz"
+          args="-d $(find drive_yolo)/rviz/tracking_visualization.rviz"
+          required="false"/>
+
+</launch>

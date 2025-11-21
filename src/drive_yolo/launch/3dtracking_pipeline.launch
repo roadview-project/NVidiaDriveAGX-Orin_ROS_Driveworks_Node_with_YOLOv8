@@ -1,0 +1,115 @@
+<launch>
+    <!-- Arguments for the complete 3D tracking pipeline -->
+    <arg name="model_path" default="models/yolo11n.engine"/>
+    <arg name="use_driveworks_camera" default="true"/>
+    <arg name="camera_params" default="camera-name=F008A120RM0AV2,interface=csi-ab,link=1,output-format=processed"/>
+    
+    <!-- YOLO Detection thresholds -->
+    <arg name="confidence_threshold" default="0.3"/>
+    <arg name="detection_threshold" default="0.2"/>
+    
+    <!-- LiDAR-Camera Fusion parameters -->
+    <arg name="max_lidar_distance" default="50.0"/>
+    <arg name="min_lidar_distance" default="0.5"/>
+    
+    <!-- 3D Tracking parameters -->
+    <arg name="distance_threshold_3d" default="2.0"/>        <!-- 2 meters for 3D association -->
+    <arg name="max_missed_frames" default="8"/>
+    <arg name="min_detections_for_tracking" default="3"/>
+    <arg name="min_lidar_points" default="5"/>
+    <arg name="min_speed_threshold" default="0.1"/>          <!-- 0.1 m/s minimum to be considered "moving" -->
+    <arg name="max_tracking_distance" default="30.0"/>       <!-- Track objects up to 30m -->
+    
+    <!-- System configuration -->
+    <arg name="quiet_mode" default="false"/>
+    <arg name="publish_all_tracks" default="true"/>
+    <arg name="publish_high_quality_only" default="false"/>
+    
+    <!-- Camera calibration parameters (you'll need to set these for your setup) -->
+    <arg name="camera_matrix" default="[800.0, 0.0, 320.0, 0.0, 800.0, 240.0, 0.0, 0.0, 1.0]"/>
+    <arg name="distortion_coefficients" default="[0.0, 0.0, 0.0, 0.0]"/>
+    <arg name="lidar_to_camera_rotation" default="[1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]"/>
+    <arg name="lidar_to_camera_translation" default="[0.0, 0.0, 0.0]"/>
+
+    <!-- 1. YOLO Detection Node -->
+    <node name="drive_yolo_node" pkg="drive_yolo" type="drive_yolo_node_node" output="screen">
+        <!-- Model configuration -->
+        <param name="model_path" value="$(arg model_path)"/>
+        
+        <!-- Camera configuration -->
+        <param name="use_driveworks_camera" value="$(arg use_driveworks_camera)"/>
+        <param name="camera_params" value="$(arg camera_params)"/>
+        
+        <!-- Detection thresholds -->
+        <param name="confidence_threshold" value="$(arg confidence_threshold)"/>
+        <param name="detection_threshold" value="$(arg detection_threshold)"/>
+        <param name="quiet_mode" value="$(arg quiet_mode)"/>
+        
+        <!-- ROS camera fallback -->
+        <param name="image_topic" value="/camera/image_input"/>
+    </node>
+
+    <!-- 2. LiDAR-Camera Fusion Node -->
+    <node name="lidar_camera_fusion_node" pkg="drive_yolo" type="drive_yolo_lidar_fusion_node" output="screen">
+        <!-- Fusion parameters -->
+        <param name="max_distance" value="$(arg max_lidar_distance)"/>
+        <param name="min_distance" value="$(arg min_lidar_distance)"/>
+        <param name="debug_visualization" value="true"/>
+        
+        <!-- Camera calibration parameters -->
+        <rosparam param="camera_matrix" subst_value="True">$(arg camera_matrix)</rosparam>
+        <rosparam param="distortion_coefficients" subst_value="True">$(arg distortion_coefficients)</rosparam>
+        <rosparam param="lidar_to_camera_rotation" subst_value="True">$(arg lidar_to_camera_rotation)</rosparam>
+        <rosparam param="lidar_to_camera_translation" subst_value="True">$(arg lidar_to_camera_translation)</rosparam>
+    </node>
+
+    <!-- 3. 3D Object Tracking Node -->
+    <node name="tracking_3d_node" pkg="drive_yolo" type="drive_yolo_tracking_3d_node" output="screen">
+        <!-- 3D Tracking parameters -->
+        <param name="distance_threshold_3d" value="$(arg distance_threshold_3d)"/>
+        <param name="max_missed_frames" value="$(arg max_missed_frames)"/>
+        <param name="min_detections_for_tracking" value="$(arg min_detections_for_tracking)"/>
+        <param name="min_lidar_points" value="$(arg min_lidar_points)"/>
+        <param name="min_speed_threshold" value="$(arg min_speed_threshold)"/>
+        <param name="max_tracking_distance" value="$(arg max_tracking_distance)"/>
+        
+        <!-- Publishing options -->
+        <param name="quiet_mode" value="$(arg quiet_mode)"/>
+        <param name="publish_all_tracks" value="$(arg publish_all_tracks)"/>
+        <param name="publish_high_quality_only" value="$(arg publish_high_quality_only)"/>
+    </node>
+
+    <!-- Optional: Image publisher for testing without DriveWorks camera -->
+    <node name="image_publisher" pkg="drive_yolo" type="drive_yolo_image_publisher" 
+          if="$(eval not arg('use_driveworks_camera'))" output="screen">
+        <param name="image_path" value="image/test_image.png"/>
+        <param name="publish_rate" value="10.0"/>
+    </node>
+
+    <!-- Optional: Speed Monitor Node (example of how to use the 3D tracking data) -->
+    <node name="speed_monitor" pkg="drive_yolo" type="speed_monitor_node" output="screen" if="false">
+        <param name="speed_limit_ms" value="13.89"/>  <!-- 50 km/h = 13.89 m/s -->
+        <param name="warn_threshold_ms" value="11.11"/> <!-- 40 km/h = 11.11 m/s -->
+        <param name="monitor_classes" value="0,1,2,3,5,7"/>  <!-- person, bicycle, car, motorcycle, bus, truck -->
+    </node>
+
+    <!-- Optional: TF broadcaster for coordinate frames -->
+    <node name="tf_broadcaster" pkg="tf2_ros" type="static_transform_publisher" 
+          args="0 0 0 0 0 0 base_link camera" if="false"/>
+    <node name="tf_broadcaster_lidar" pkg="tf2_ros" type="static_transform_publisher" 
+          args="0 0 0 0 0 0 base_link lidar" if="false"/>
+
+    <!-- Optional: RViz for 3D visualization -->
+    <!--
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find drive_yolo)/config/3d_tracking_vis.rviz" 
+          if="$(arg use_rviz)" output="screen"/>
+    -->
+
+    <!-- Optional: RQT plugins for monitoring -->
+    <!--
+    <node name="rqt_plot_speeds" pkg="rqt_plot" type="rqt_plot" 
+          args="/tracked_objects_3d/objects[0]/speed_3d /tracked_objects_3d/objects[1]/speed_3d"
+          if="$(arg show_plots)" output="screen"/>
+    -->
+
+</launch>

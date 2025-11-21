@@ -1,0 +1,26 @@
+<launch>
+    <!--
+    UDP Vehicle Position TF Publisher
+
+    Receives vehicle position via UDP (roll, pitch, yaw, x, y)
+    and publishes as TF transform and odometry.
+
+    Pairs with ROS2 inssol_udp_sender node.
+    -->
+
+    <arg name="port" default="5000" />
+    <arg name="world_frame" default="map" />
+    <arg name="vehicle_frame" default="base_link" />
+    <arg name="publish_rate" default="50.0" />
+    <arg name="z_offset" default="0.0" />
+
+    <node name="udp_vehicle_tf_publisher" pkg="drive_yolo" type="drive_yolo_udp_vehicle_tf" output="screen">
+        <param name="port" value="$(arg port)" />
+        <param name="world_frame" value="$(arg world_frame)" />
+        <param name="vehicle_frame" value="$(arg vehicle_frame)" />
+        <param name="publish_rate" value="$(arg publish_rate)" />
+        <param name="publish_odom" value="true" />
+        <param name="z_offset" value="$(arg z_offset)" />
+    </node>
+
+</launch>

@@ -1,0 +1,19 @@
+<launch>
+    <!-- Detection Visualizer Launch File -->
+    <!-- Visualizes YOLO detections on camera images -->
+
+    <!-- Visualization parameters -->
+    <param name="detection_visualizer/bbox_thickness" value="2" />
+    <param name="detection_visualizer/text_scale" value="0.6" />
+    <param name="detection_visualizer/text_thickness" value="2" />
+    <param name="detection_visualizer/show_confidence" value="true" />
+    <param name="detection_visualizer/show_class_name" value="true" />
+
+    <!-- Launch the visualizer node -->
+    <node name="detection_visualizer" pkg="drive_yolo" type="detection_visualizer_node.py" output="screen">
+        <!-- You can remap topics here if needed -->
+        <!-- <remap from="/camera/image_raw" to="/your/camera/topic" /> -->
+        <!-- <remap from="/detections" to="/your/detections/topic" /> -->
+    </node>
+
+</launch>

@@ -1,0 +1,76 @@
+<launch>
+    <!--
+    LiDAR-Camera Fusion with Synchronization Parameters
+
+    This is an enhanced version of lidar_camera_fusion.launch that includes
+    configurable synchronization parameters to handle timing mismatches
+    between camera and LiDAR data.
+
+    USAGE:
+    1. First run sync_diagnostics.launch to measure the timing offset
+    2. Update time_offset_ms below based on the diagnostic output
+    3. Adjust sync_time_slop and sync_queue_size as needed
+    -->
+
+    <!-- Camera calibration parameters -->
+    <rosparam param="lidar_camera_fusion/camera_matrix">[3145.24132, 0.0, 1887.68485, 0.0, 3166.08502, 990.62304, 0.0, 0.0, 1.0]</rosparam>
+    <rosparam param="lidar_camera_fusion/distortion_coefficients">[-0.298671, 0.087807, 0.000383, 0.000551, 0.000000]</rosparam>
+
+    <!-- Image dimensions -->
+    <param name="lidar_camera_fusion/image_width" value="3848" />
+    <param name="lidar_camera_fusion/image_height" value="2168" />
+
+    <!-- Frame configuration -->
+    <param name="lidar_camera_fusion/use_tf_transforms" value="true" />
+    <param name="lidar_camera_fusion/lidar_frame" value="lidar" />
+    <param name="lidar_camera_fusion/camera_frame" value="camera_entron" />
+    <param name="lidar_camera_fusion/base_frame" value="car_rear_axle" />
+
+    <!-- Distance filtering -->
+    <param name="lidar_camera_fusion/max_distance" value="250.0" />
+    <param name="lidar_camera_fusion/min_distance" value="0.5" />
+    <param name="lidar_camera_fusion/debug_visualization" value="true" />
+    <param name="lidar_camera_fusion/transform_timeout" value="0.1" />
+
+    <!-- NEW: Synchronization parameters -->
+    <!-- Time tolerance for matching messages (seconds, default: 0.1 = 100ms) -->
+    <param name="lidar_camera_fusion/sync_time_slop" value="0.15" />
+
+    <!-- Queue size for message buffering (default: 20) -->
+    <!-- Increase if you see "dropping message" warnings -->
+    <param name="lidar_camera_fusion/sync_queue_size" value="30" />
+
+    <!-- Manual time offset between camera and LiDAR (milliseconds) -->
+    <!-- Positive value = camera is ahead of LiDAR -->
+    <!-- Negative value = camera is behind LiDAR -->
+    <!-- Set based on sync_diagnostics output -->
+    <param name="lidar_camera_fusion/time_offset_ms" value="0.0" />
+
+    <!-- Ground filtering (disabled for now) -->
+    <param name="lidar_camera_fusion/enable_ground_filtering" value="false" />
+    <param name="lidar_camera_fusion/ground_height_threshold" value="0.1" />
+    <param name="lidar_camera_fusion/lidar_height_above_ground" value="1.383" />
+
+    <!-- Point clustering - ENABLED to filter rain/noise -->
+    <param name="lidar_camera_fusion/enable_point_clustering" value="true" />
+    <param name="lidar_camera_fusion/max_point_distance_from_center" value="300.0" />
+    <param name="lidar_camera_fusion/min_points_for_object" value="3" />
+    <param name="lidar_camera_fusion/point_density_threshold" value="0.1" />
+    <param name="lidar_camera_fusion/max_object_height" value="6.0" />
+    <param name="lidar_camera_fusion/max_object_width" value="5.0" />
+    <param name="lidar_camera_fusion/outlier_distance_threshold" value="5.0" />
+
+    <!-- ROI filtering - Front-facing LiDAR with lateral barriers -->
+    <param name="lidar_camera_fusion/enable_roi_filtering" value="true" />
+    <param name="lidar_camera_fusion/roi_x_min" value="0.0" />
+    <param name="lidar_camera_fusion/roi_x_max" value="50.0" />
+    <param name="lidar_camera_fusion/roi_y_min" value="-2.0" />
+    <param name="lidar_camera_fusion/roi_y_max" value="7.0" />
+
+    <!-- Launch the fusion node -->
+    <node name="lidar_camera_fusion" pkg="drive_yolo" type="drive_yolo_lidar_fusion_node" output="screen">
+        <!-- Remap LiDAR topic -->
+        <remap from="/lidar/points" to="/invz_summation_reflection" />
+    </node>
+
+</launch>

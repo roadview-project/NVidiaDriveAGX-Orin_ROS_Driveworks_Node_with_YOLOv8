@@ -1,0 +1,51 @@
+<launch>
+    <!--
+    Synchronization Diagnostics Launch File
+
+    This launch file starts a diagnostic node that measures and reports
+    timing differences between camera detections and LiDAR pointcloud data.
+
+    Use this to:
+    1. Identify synchronization issues
+    2. Measure the delay between camera and LiDAR
+    3. Determine appropriate time_offset_ms parameter for fusion
+
+    The node will report statistics every 2 seconds showing:
+    - Mean, median, std dev of timing offsets
+    - Recommendation for time_offset_ms if needed
+    - Recent sample timestamps
+    -->
+
+    <!-- Sync Diagnostics Node -->
+    <node name="sync_diagnostics" pkg="drive_yolo" type="drive_yolo_sync_diagnostics" output="screen">
+        <!-- Topics to monitor -->
+        <param name="camera_topic" value="/detections" />
+        <param name="lidar_topic" value="/invz_summation_reflection" />
+
+        <!-- Queue size for statistics buffer (default: 50 samples) -->
+        <param name="queue_size" value="50" />
+
+        <!-- Report interval in seconds (default: 2.0) -->
+        <param name="report_interval" value="2.0" />
+    </node>
+
+    <!--
+    After running, look for output like:
+
+    === SYNC DIAGNOSTICS REPORT ===
+    Messages received: Camera=150, LiDAR=150
+    Queue size: 50/50 samples
+    Camera-LiDAR timestamp offset (positive = camera ahead):
+      Mean:   +45.3 ms
+      Median: +44.8 ms
+      StdDev:   5.2 ms
+      Min:    +35.1 ms
+      Max:    +58.7 ms
+
+    Recommendation: Set time_offset_ms = 45.3 in fusion config
+
+    Then add to lidar_camera_fusion.launch:
+    <param name="lidar_camera_fusion/time_offset_ms" value="45.3" />
+    -->
+
+</launch>

@@ -1,0 +1,51 @@
+<launch>
+    <!-- LiDAR-Camera Fusion Launch File -->
+    
+    <!-- Camera calibration parameters -->
+    <rosparam param="lidar_camera_fusion/camera_matrix">[3145.24132, 0.0, 1887.68485, 0.0, 3166.08502, 990.62304, 0.0, 0.0, 1.0]</rosparam>
+    <rosparam param="lidar_camera_fusion/distortion_coefficients">[-0.298671, 0.087807, 0.000383, 0.000551, 0.000000]</rosparam>
+    
+    <!-- Image dimensions -->
+    <param name="lidar_camera_fusion/image_width" value="3848" />
+    <param name="lidar_camera_fusion/image_height" value="2168" />
+    
+    <!-- Frame configuration -->
+    <param name="lidar_camera_fusion/use_tf_transforms" value="true" />
+    <param name="lidar_camera_fusion/lidar_frame" value="lidar" />
+    <param name="lidar_camera_fusion/camera_frame" value="camera_entron" />
+    <param name="lidar_camera_fusion/base_frame" value="car_rear_axle" />
+    
+    <!-- Distance filtering -->
+    <param name="lidar_camera_fusion/max_distance" value="250.0" />
+    <param name="lidar_camera_fusion/min_distance" value="0.5" />  <!-- Lowered to 0.5m to detect close pedestrians -->
+    <param name="lidar_camera_fusion/debug_visualization" value="true" />
+    <param name="lidar_camera_fusion/transform_timeout" value="0.1" />
+
+    <!-- Ground filtering (disabled for now) -->
+    <param name="lidar_camera_fusion/enable_ground_filtering" value="false" />
+    <param name="lidar_camera_fusion/ground_height_threshold" value="0.1" />
+    <param name="lidar_camera_fusion/lidar_height_above_ground" value="1.383" />
+
+    <!-- Point clustering - ENABLED to filter rain/noise -->
+    <param name="lidar_camera_fusion/enable_point_clustering" value="true" />  <!-- ENABLED to reject rain -->
+    <param name="lidar_camera_fusion/max_point_distance_from_center" value="300.0" />  <!-- Set high for distant objects -->
+    <param name="lidar_camera_fusion/min_points_for_object" value="3" />  <!-- Lowered to 3 to allow distant objects -->
+    <param name="lidar_camera_fusion/point_density_threshold" value="0.1" />
+    <param name="lidar_camera_fusion/max_object_height" value="6.0" />  <!-- Increased to 6m for trucks/buses -->
+    <param name="lidar_camera_fusion/max_object_width" value="5.0" />  <!-- Increased to 5m for large vehicles -->
+    <param name="lidar_camera_fusion/outlier_distance_threshold" value="5.0" />  <!-- Tighter clustering -->
+
+    <!-- ROI filtering - Front-facing LiDAR with lateral barriers -->
+    <param name="lidar_camera_fusion/enable_roi_filtering" value="true" />
+    <param name="lidar_camera_fusion/roi_x_min" value="0.0" />      <!-- Forward min: at vehicle -->
+    <param name="lidar_camera_fusion/roi_x_max" value="50.0" />     <!-- Forward max: 50m -->
+    <param name="lidar_camera_fusion/roi_y_min" value="-2.0" />     <!-- Right limit: 2m -->
+    <param name="lidar_camera_fusion/roi_y_max" value="7.0" />      <!-- Left limit: 7m -->
+    
+    <!-- Launch the fusion node -->
+    <node name="lidar_camera_fusion" pkg="drive_yolo" type="drive_yolo_lidar_fusion_node" output="screen">
+        <!-- Remap LiDAR topic -->
+        <remap from="/lidar/points" to="/invz_summation_reflection" />
+    </node>
+    
+</launch>

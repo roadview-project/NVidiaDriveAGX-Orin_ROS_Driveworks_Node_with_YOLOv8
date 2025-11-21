@@ -1,0 +1,43 @@
+<launch>
+
+	<!-- Car Settings -->
+	
+	<!-- Car rear Axle -->
+	<node pkg="tf2_ros" type="static_transform_publisher" name="CarrearAxle" args="0 0 0.342 0 0 0 car_topographical_zero car_rear_axle" />
+	
+	<!-- Car Wheels -->
+	<node pkg="tf2_ros" type="static_transform_publisher" name="WheelFR" args="2.825 -0.879 0 0 0 0 car_rear_axle Wheel_FR" />
+	<node pkg="tf2_ros" type="static_transform_publisher" name="WheelBR" args="0 -0.891 0 0 0 0 car_rear_axle Wheel_BR" />
+	<node pkg="tf2_ros" type="static_transform_publisher" name="WheelBL" args="0 0.891 0 0 0 0 car_rear_axle Wheel_BL" />
+	<node pkg="tf2_ros" type="static_transform_publisher" name="WheelFL" args="2.830 0.879 0 0 0 0 car_rear_axle Wheel_FL" />
+
+	<!-- Car Sensors Settings -->
+	<!-- LiDARs -->
+	<node pkg="tf2_ros" type="static_transform_publisher" name="Innoviz_LiDAR_TF" args="1.539 0.006 1.041 0 0 0 car_rear_axle lidar" />
+	<node pkg="tf2_ros" type="static_transform_publisher" name="Ouster_LiDAR_TF" args="1.509 0.002 1.133 0 0 0 car_rear_axle ouster_lidar" />
+	
+	<!-- Cameras zz=0.752-->
+	<node pkg="tf2_ros" type="static_transform_publisher" name="FrontCamera_Entron_TF" args="1.706 -0.016 0.752 -1.55 0.015 -1.45 car_rear_axle camera_entron" /> 
+	<node pkg="tf2_ros" type="static_transform_publisher" name="FrontCamera_Lucid_TF" args="1.693 0.016 0.784 0 0 0 car_rear_axle camera_lucid" />
+	
+	<!-- RADARs -->
+	<node pkg="tf2_ros" type="static_transform_publisher" name="ZFRADAR_TF" args="3.685 -0.269 -0.034 0 0 0 car_rear_axle zf_radar" />
+	<node pkg="tf2_ros" type="static_transform_publisher" name="ARS408_RADAR_TF" args="3.678 -0.005 -0.08 0 0 0 car_rear_axle ars_radar" />		
+
+	<!-- IMU -->
+	<node pkg="tf2_ros" type="static_transform_publisher" name="IMAR_TF" args="0.761 0.048 0.230 0 0 0 car_rear_axle IMU" />
+	<node pkg="tf2_ros" type="static_transform_publisher" name="GPS_Anttena" args="1.083 0 1.055 0 0 0 car_rear_axle GPS" />
+
+	<!-- Fake Car Sensors TF -->
+	<node pkg="tf2_ros" type="static_transform_publisher" name="fake_Camera_entronTF" args="0 0 0 0 0 0 camera_entron camera" />
+	<node pkg="tf2_ros" type="static_transform_publisher" name="fake_Innoviz_LiDAR_TF" args="0 0 0 0 0 0 lidar base_link" />
+
+	<!-- node pkg="tf2_ros" type="static_transform_publisher" name="fake_Innoviz_LiDAR_TF" args="0 0 0 -1.56 0 -0.01 lidar base_link" /  -->
+
+	<node pkg="tf2_ros" type="static_transform_publisher" name="fake_Ouster_LiDAR_TF" args="0 0 0 0 0 0 ouster_lidar base_link_ouster" />
+	<node pkg="tf2_ros" type="static_transform_publisher" name="fake_radar_TF" args="0 0 0 0 0 0 zf_radar radar_center" />
+	
+	
+
+
+</launch>

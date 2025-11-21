@@ -1,0 +1,98 @@
+<launch>
+    <!--
+    Pointcloud Delay Demonstration
+
+    This launch file adds artificial delay to pointcloud data to demonstrate
+    and test synchronization issues and solutions.
+
+    USAGE SCENARIOS:
+
+    1. Demonstrate sync problem:
+       - Run with delay enabled
+       - Run sync_diagnostics to see the measured offset
+       - Show poor fusion results without sync compensation
+
+    2. Test sync solution:
+       - Add delay here
+       - Measure with sync_diagnostics
+       - Configure fusion with measured offset
+       - Show improved fusion results
+
+    3. Create comparison videos:
+       - Record with no delay (baseline)
+       - Record with delay but no compensation
+       - Record with delay and proper sync configuration
+    -->
+
+    <!-- Pointcloud Delay Node -->
+    <node name="pointcloud_delay" pkg="drive_yolo" type="drive_yolo_pointcloud_delay" output="screen">
+        <!-- Topics -->
+        <param name="input_topic" value="/invz_summation_reflection" />
+        <param name="output_topic" value="/invz_summation_reflection_delayed" />
+
+        <!-- DELAY CONFIGURATION -->
+        <!-- Option 1: Time-based delay (set frame_delay=0 to use this) -->
+        <param name="delay_ms" value="50.0" />  <!-- 50ms delay -->
+
+        <!-- Option 2: Frame-based delay (set to >0 to use this instead of time delay) -->
+        <!-- At 30 Hz: 1 frame = 33ms, 2 frames = 66ms, 3 frames = 100ms -->
+        <param name="frame_delay" value="0" />  <!-- 0 = use time delay -->
+
+        <!-- Buffer configuration -->
+        <param name="queue_size" value="100" />
+
+        <!-- Timestamp handling -->
+        <!-- false = shift timestamps by delay amount (recommended for testing) -->
+        <!-- true = keep original timestamps (shows actual delay) -->
+        <param name="preserve_timestamps" value="false" />
+
+        <!-- Passthrough mode (no delay, useful for quick enable/disable) -->
+        <param name="passthrough" value="false" />
+
+        <!-- Statistics reporting interval (seconds) -->
+        <param name="report_interval" value="5.0" />
+    </node>
+
+    <!--
+    EXAMPLES:
+
+    1. Test with 50ms delay (simulating camera lag):
+       <param name="delay_ms" value="50.0" />
+       <param name="frame_delay" value="0" />
+
+    2. Test with 2-frame delay at 30Hz (~66ms):
+       <param name="delay_ms" value="0.0" />
+       <param name="frame_delay" value="2" />
+
+    3. Test with large delay (100ms):
+       <param name="delay_ms" value="100.0" />
+       <param name="frame_delay" value="0" />
+
+    4. Disable delay quickly:
+       <param name="passthrough" value="true" />
+
+    WORKFLOW FOR DEMONSTRATION:
+
+    Terminal 1: Launch this with delay
+      roslaunch drive_yolo pointcloud_delay_demo.launch
+
+    Terminal 2: Run your detection/fusion pipeline
+      Use /invz_summation_reflection_delayed instead of /invz_summation_reflection
+
+    Terminal 3: Run sync diagnostics
+      roslaunch drive_yolo sync_diagnostics.launch
+      # Update lidar_topic to /invz_summation_reflection_delayed
+
+    Terminal 4: Monitor delay visualization
+      rqt_plot /pointcloud_delay/queue_size
+
+    REMAPPING FUSION TO USE DELAYED POINTCLOUD:
+
+    When launching fusion, remap to use delayed cloud:
+      <remap from="/lidar/points" to="/invz_summation_reflection_delayed" />
+
+    Or in your fusion launch file, change:
+      <remap from="/lidar/points" to="/invz_summation_reflection_delayed" />
+    -->
+
+</launch>

@@ -1,0 +1,65 @@
+<launch>
+    <!-- Enhanced 3D Tracking with Low-Pass Filtering and RViz Visualization -->
+    
+    <!-- 3D Tracking parameters -->
+    <arg name="distance_threshold_3d" default="10.0"/>
+    <arg name="max_missed_frames" default="8"/>
+    <arg name="min_detections_for_tracking" default="1"/>
+    <arg name="min_lidar_points" default="0"/>
+    <arg name="min_speed_threshold" default="0.1"/>
+    <arg name="max_tracking_distance" default="200.0"/>
+    
+    <!-- NEW: Velocity filtering parameters -->
+    <arg name="velocity_filter_alpha" default="0.05"/>      <!-- Lower = more smoothing (0.1-0.5 recommended) -->
+    <arg name="acceleration_filter_alpha" default="0.05"/>  <!-- Acceleration filter -->
+    <arg name="max_reasonable_velocity" default="30.0"/>   <!-- Max velocity in m/s (180 km/h) -->
+    <arg name="max_reasonable_acceleration" default="5.0"/> <!-- Max acceleration in m/s² -->
+    
+    <!-- System configuration -->
+    <arg name="quiet_mode" default="false"/>
+    <arg name="publish_all_tracks" default="true"/>
+    <arg name="publish_high_quality_only" default="false"/>
+    <arg name="use_python_tracker" default="true"/>
+    
+    <!-- NEW: RViz visualization parameters -->
+    <arg name="enable_rviz_visualization" default="true"/>
+    <arg name="show_velocity_vectors" default="true"/>     <!-- Show velocity arrows -->
+    <arg name="show_bounding_boxes" default="true"/>       <!-- Show 3D bounding boxes -->
+    <arg name="show_track_ids" default="true"/>            <!-- Show track ID labels -->
+    <arg name="show_raw_vs_filtered" default="true"/>      <!-- Compare raw vs filtered velocity -->
+    <arg name="launch_rviz" default="false"/>              <!-- Auto-launch RViz -->
+
+    <!-- Enhanced Python Tracking Node -->
+    <node name="tracking_3d_python_node" pkg="drive_yolo" type="tracking_3d_node.py" 
+          output="screen" if="$(arg use_python_tracker)">
+        <param name="publish_rate" value="10.0"/>              # 10 Hz publishing
+        <param name="enable_continuous_publishing" value="true"/>  # Enable heartbeat
+        
+        <!-- Basic tracking parameters -->
+        <param name="distance_threshold_3d" value="$(arg distance_threshold_3d)"/>
+        <param name="max_missed_frames" value="$(arg max_missed_frames)"/>
+        <param name="min_detections_for_tracking" value="$(arg min_detections_for_tracking)"/>
+        <param name="min_lidar_points" value="$(arg min_lidar_points)"/>
+        <param name="min_speed_threshold" value="$(arg min_speed_threshold)"/>
+        <param name="max_tracking_distance" value="$(arg max_tracking_distance)"/>
+        
+        <!-- NEW: Velocity filtering parameters -->
+        <param name="velocity_filter_alpha" value="$(arg velocity_filter_alpha)"/>
+        <param name="acceleration_filter_alpha" value="$(arg acceleration_filter_alpha)"/>
+        <param name="max_reasonable_velocity" value="$(arg max_reasonable_velocity)"/>
+        <param name="max_reasonable_acceleration" value="$(arg max_reasonable_acceleration)"/>
+        
+        <!-- System configuration -->
+        <param name="quiet_mode" value="$(arg quiet_mode)"/>
+        <param name="publish_all_tracks" value="$(arg publish_all_tracks)"/>
+        <param name="publish_high_quality_only" value="$(arg publish_high_quality_only)"/>
+        
+        <!-- NEW: RViz visualization parameters -->
+        <param name="enable_rviz_visualization" value="$(arg enable_rviz_visualization)"/>
+        <param name="show_velocity_vectors" value="$(arg show_velocity_vectors)"/>
+        <param name="show_bounding_boxes" value="$(arg show_bounding_boxes)"/>
+        <param name="show_track_ids" value="$(arg show_track_ids)"/>
+        <param name="show_raw_vs_filtered" value="$(arg show_raw_vs_filtered)"/>
+    </node>   
+
+</launch>

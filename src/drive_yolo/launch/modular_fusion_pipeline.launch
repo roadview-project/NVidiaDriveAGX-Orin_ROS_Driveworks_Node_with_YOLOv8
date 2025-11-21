@@ -1,0 +1,74 @@
+<launch>
+    <!--
+    Modular LiDAR-Camera Fusion Pipeline
+
+    Breaks down the fusion process into separate debuggable nodes:
+    1. Point Cloud Filter - Filters by distance, ROI, ground
+    2. Point Cloud Projector - Projects 3D points to 2D image
+    3. [Optional] Detection Associator - Associates projections with detections
+    4. [Optional] Distance Estimator - Computes final distance estimates
+
+    Easier debugging with visualization at each stage!
+    -->
+
+    <!-- Camera calibration parameters -->
+    <rosparam param="lidar_camera_fusion/camera_matrix">[3145.24132, 0.0, 1887.68485, 0.0, 3166.08502, 990.62304, 0.0, 0.0, 1.0]</rosparam>
+    <rosparam param="lidar_camera_fusion/distortion_coefficients">[-0.298671, 0.087807, 0.000383, 0.000551, 0.000000]</rosparam>
+
+    <!-- Image dimensions -->
+    <param name="lidar_camera_fusion/image_width" value="3848" />
+    <param name="lidar_camera_fusion/image_height" value="2168" />
+
+    <!-- Step 1: Point Cloud Filter Node -->
+    <node name="pointcloud_filter" pkg="drive_yolo" type="drive_yolo_pointcloud_filter" output="screen">
+        <param name="input_topic" value="/lidar/points" />
+        <param name="output_topic" value="/lidar/points_filtered" />
+
+        <!-- Distance filtering -->
+        <param name="min_distance" value="0.5" />
+        <param name="max_distance" value="100.0" />
+
+        <!-- ROI filtering (forward-facing LiDAR) -->
+        <param name="enable_roi_filtering" value="true" />
+        <param name="roi_x_min" value="0.0" />    <!-- Forward -->
+        <param name="roi_x_max" value="50.0" />
+        <param name="roi_y_min" value="-10.0" />  <!-- Right -->
+        <param name="roi_y_max" value="10.0" />   <!-- Left -->
+        <param name="roi_z_min" value="-2.0" />   <!-- Below -->
+        <param name="roi_z_max" value="10.0" />   <!-- Above -->
+
+        <!-- Ground filtering -->
+        <param name="enable_ground_filtering" value="false" />
+        <param name="ground_z_threshold" value="-1.0" />
+
+        <!-- Visualization -->
+        <param name="enable_visualization" value="true" />
+        <param name="target_frame" value="lidar" />
+    </node>
+
+    <!-- Step 2: Point Cloud Projector Node -->
+    <node name="pointcloud_projector" pkg="drive_yolo" type="drive_yolo_pointcloud_projector" output="screen">
+        <param name="lidar_frame" value="lidar" />
+        <param name="camera_frame" value="camera_entron" />
+        <param name="transform_timeout" value="0.1" />
+
+        <!-- Camera calibration (passed from rosparam) -->
+        <rosparam param="camera_matrix" subst_value="true">$(arg camera_matrix | default '[3145.24132, 0.0, 1887.68485, 0.0, 3166.08502, 990.62304, 0.0, 0.0, 1.0]')</rosparam>
+        <rosparam param="distortion_coefficients" subst_value="true">$(arg distortion_coefficients | default '[-0.298671, 0.087807, 0.000383, 0.000551, 0.000000]')</rosparam>
+
+        <param name="image_width" value="3848" />
+        <param name="image_height" value="2168" />
+
+        <!-- Debug visualization -->
+        <param name="debug_visualization" value="true" />
+    </node>
+
+    <!--
+    Note: You would then create additional nodes for:
+    - Detection association (matches projected points with detections)
+    - Distance estimation (computes final distance from associated points)
+
+    For now, this demonstrates the modular architecture for easier debugging!
+    -->
+
+</launch>

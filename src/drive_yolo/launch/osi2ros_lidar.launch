@@ -1,0 +1,15 @@
+<launch>
+    <!-- OSI to ROS LiDAR Bridge Launch File -->
+    <!-- Receives OSI LiDAR data via HTTP and publishes as ROS PointCloud2 -->
+
+    <!-- Parameters -->
+    <param name="lidar_osi_http_receiver/port" value="5002" />
+    <param name="lidar_osi_http_receiver/topic_name" value="/invz_summation_reflection" />
+
+    <!-- Launch the OSI HTTP receiver node -->
+    <node name="lidar_osi_http_receiver" pkg="drive_yolo" type="osi2ros_lidar.py" output="screen">
+        <!-- Node will listen on HTTP port 5002 for OSI LiDAR data -->
+        <!-- Publishes PointCloud2 to /invz_summation_reflection -->
+    </node>
+
+</launch>

@@ -1,0 +1,119 @@
+<launch>
+    <!-- Complete Detection Pipeline Launch File -->
+    <!-- This combines YOLO + LiDAR fusion in one launch -->
+    
+    <!-- Arguments for easy configuration -->
+    <arg name="model_path" default="$(find drive_yolo)/models/yolov8n.engine" />
+    <arg name="use_driveworks" default="true" />
+    <arg name="confidence_threshold" default="0.3" />
+    <arg name="detection_threshold" default="0.3" />
+    <arg name="quiet_mode" default="true" />
+    <arg name="camera_params" default="camera-name=F008A120RM0AV2,interface=csi-ab,link=1,output-format=processed" />
+    <arg name="image_topic" default="/camera/image_raw" />
+    
+    <!-- YOLO Detection Node - conditional based on use_driveworks -->
+    <group if="$(arg use_driveworks)">
+        <node name="drive_yolo_node" pkg="drive_yolo" type="drive_yolo_node_node" output="screen">
+            <param name="model_path" value="$(arg model_path)" />
+            <param name="use_driveworks_camera" value="true" />
+            <param name="camera_params" value="$(arg camera_params)" />
+            <param name="confidence_threshold" value="$(arg confidence_threshold)" />
+            <param name="detection_threshold" value="$(arg detection_threshold)" />
+            <param name="quiet_mode" value="$(arg quiet_mode)" />
+        </node>
+    </group>
+    
+    <group unless="$(arg use_driveworks)">
+        <node name="drive_yolo_node" pkg="drive_yolo" type="drive_yolo_node" output="screen">
+            <param name="model_path" value="$(arg model_path)" />
+            <param name="use_driveworks_camera" value="false" />
+            <param name="image_topic" value="$(arg image_topic)" />
+            <param name="confidence_threshold" value="$(arg confidence_threshold)" />
+            <param name="detection_threshold" value="$(arg detection_threshold)" />
+            <param name="quiet_mode" value="$(arg quiet_mode)" />
+        </node>
+    </group>
+    
+    <!-- Camera calibration parameters for fusion -->
+    <rosparam param="lidar_camera_fusion/camera_matrix">[3145.24132, 0.0, 1887.68485, 0.0, 3166.08502, 990.62304, 0.0, 0.0, 1.0]</rosparam>
+    <rosparam param="lidar_camera_fusion/distortion_coefficients">[-0.298671, 0.087807, 0.000383, 0.000551, 0.000000]</rosparam>
+    
+    <!-- Image dimensions -->
+    <param name="lidar_camera_fusion/image_width" value="3848" />
+    <param name="lidar_camera_fusion/image_height" value="2168" />
+    
+    <!-- Frame configuration -->
+    <param name="lidar_camera_fusion/use_tf_transforms" value="true" />
+    <param name="lidar_camera_fusion/lidar_frame" value="lidar" />
+    <param name="lidar_camera_fusion/camera_frame" value="camera_entron" />
+    <param name="lidar_camera_fusion/base_frame" value="car_rear_axle" />
+    
+    <!-- Distance filtering -->
+    <param name="lidar_camera_fusion/max_distance" value="250.0" />
+    <param name="lidar_camera_fusion/min_distance" value="10.0" />
+    <param name="lidar_camera_fusion/debug_visualization" value="true" />
+    <param name="lidar_camera_fusion/transform_timeout" value="0.1" />
+    
+    <!-- Ground filtering (disabled for now) -->
+    <param name="lidar_camera_fusion/enable_ground_filtering" value="false" />
+    <param name="lidar_camera_fusion/ground_height_threshold" value="0.1" />
+    <param name="lidar_camera_fusion/lidar_height_above_ground" value="1.383" />
+    
+    <!-- Point clustering (disabled for now) -->
+    <param name="lidar_camera_fusion/enable_point_clustering" value="false" />
+    <param name="lidar_camera_fusion/max_point_distance_from_center" value="3.0" />
+    <param name="lidar_camera_fusion/min_points_for_object" value="8" />
+    <param name="lidar_camera_fusion/point_density_threshold" value="0.1" />
+    <param name="lidar_camera_fusion/max_object_height" value="4.0" />
+    <param name="lidar_camera_fusion/max_object_width" value="3.0" />
+    <param name="lidar_camera_fusion/outlier_distance_threshold" value="10.0" />
+    
+    <!-- LiDAR-Camera Fusion Node -->
+    <node name="lidar_camera_fusion" pkg="drive_yolo" type="drive_yolo_lidar_fusion_node" output="screen">
+        <!-- Remap LiDAR topic -->
+        <remap from="/lidar/points" to="/invz_summation_reflection" />
+    </node>
+    
+    <!-- 3D Object Tracking Node -->
+    <!-- Arguments for 3D tracking -->
+    <arg name="distance_threshold_3d" default="2.0" />        <!-- 2 meters for 3D association -->
+    <arg name="max_missed_frames" default="8" />
+    <arg name="min_detections_for_tracking" default="3" />
+    <arg name="min_lidar_points" default="5" />
+    <arg name="min_speed_threshold" default="0.1" />          <!-- 0.1 m/s minimum to be considered "moving" -->
+    <arg name="max_tracking_distance" default="30.0" />       <!-- Track objects up to 30m -->
+    <arg name="publish_all_tracks" default="true" />
+    <arg name="publish_high_quality_only" default="false" />
+    
+    <node name="tracking_3d_node" pkg="drive_yolo" type="drive_yolo_tracking_3d_node" output="screen">
+        <!-- 3D Tracking parameters -->
+        <param name="distance_threshold_3d" value="$(arg distance_threshold_3d)" />
+        <param name="max_missed_frames" value="$(arg max_missed_frames)" />
+        <param name="min_detections_for_tracking" value="$(arg min_detections_for_tracking)" />
+        <param name="min_lidar_points" value="$(arg min_lidar_points)" />
+        <param name="min_speed_threshold" value="$(arg min_speed_threshold)" />
+        <param name="max_tracking_distance" value="$(arg max_tracking_distance)" />
+        
+        <!-- Publishing options -->
+        <param name="quiet_mode" value="$(arg quiet_mode)" />
+        <param name="publish_all_tracks" value="$(arg publish_all_tracks)" />
+        <param name="publish_high_quality_only" value="$(arg publish_high_quality_only)" />
+    </node>
+    
+    <!-- Optional: Speed Monitor Node -->
+    <arg name="enable_speed_monitor" default="false" />
+    <arg name="speed_limit_ms" default="13.89" />             <!-- 50 km/h = 13.89 m/s -->
+    <arg name="warn_threshold_ms" default="11.11" />          <!-- 40 km/h = 11.11 m/s -->
+    <arg name="monitor_classes" default="0,1,2,3,5,7" />      <!-- person, bicycle, car, motorcycle, bus, truck -->
+    
+    <group if="$(arg enable_speed_monitor)">
+        <node name="speed_monitor_node" pkg="drive_yolo" type="drive_yolo_speed_monitor_node" output="screen">
+            <param name="speed_limit_ms" value="$(arg speed_limit_ms)" />
+            <param name="warn_threshold_ms" value="$(arg warn_threshold_ms)" />
+            <param name="monitor_classes" value="$(arg monitor_classes)" />
+            <param name="monitor_all_classes" value="false" />
+            <param name="quiet_mode" value="$(arg quiet_mode)" />
+        </node>
+    </group>
+    
+</launch>

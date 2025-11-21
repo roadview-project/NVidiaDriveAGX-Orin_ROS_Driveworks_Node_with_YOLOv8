@@ -1,0 +1,48 @@
+<launch>
+    <!--
+    Static Object Detector
+
+    Detects static objects at known world coordinates using LiDAR.
+    Useful for detecting poles, buildings, or landmarks.
+    -->
+
+    <arg name="world_frame" default="map" />
+    <arg name="lidar_frame" default="lidar" />
+    <arg name="min_points_threshold" default="5" />
+
+    <node name="static_object_detector" pkg="drive_yolo" type="drive_yolo_static_object_detector" output="screen">
+        <param name="world_frame" value="$(arg world_frame)" />
+        <param name="lidar_frame" value="$(arg lidar_frame)" />
+        <param name="min_points_threshold" value="$(arg min_points_threshold)" />
+        <param name="detection_timeout" value="2.0" />
+
+        <!-- Define static objects as an array of dictionaries -->
+        <!-- Each object has: x, y, z, width, height, depth, label -->
+        <rosparam param="static_objects">
+            - x: 10.0
+              y: 0.0
+              z: 0.0
+              width: 0.5
+              height: 3.0
+              depth: 0.5
+              label: "pole_1"
+
+            - x: 20.0
+              y: 5.0
+              z: 0.0
+              width: 3.0
+              height: 4.0
+              depth: 2.0
+              label: "building_entrance"
+
+            - x: 15.0
+              y: -3.0
+              z: 0.0
+              width: 1.0
+              height: 2.0
+              depth: 1.0
+              label: "traffic_sign"
+        </rosparam>
+    </node>
+
+</launch>

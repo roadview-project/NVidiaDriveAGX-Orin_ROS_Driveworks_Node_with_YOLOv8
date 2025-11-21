@@ -1,0 +1,62 @@
+<launch>
+    <!-- Arguments -->
+    <arg name="model_path" default="models/yolo11n.engine"/>
+    <arg name="use_driveworks_camera" default="true"/>
+    <arg name="camera_params" default="camera-name=F008A120RM0AV2,interface=csi-ab,link=1,output-format=processed"/>
+    <arg name="confidence_threshold" default="0.2"/>
+    <arg name="detection_threshold" default="0.2"/>
+    <arg name="quiet_mode" default="false"/>
+    
+    <!-- Tracking parameters -->
+    <arg name="distance_threshold" default="100.0"/>
+    <arg name="max_missed_frames" default="10"/>
+    <arg name="min_detections_for_tracking" default="3"/>
+    
+    <!-- YOLO Detection Node -->
+    <node name="drive_yolo_node" pkg="drive_yolo" type="drive_yolo_node_node" output="screen">
+        <!-- Model configuration -->
+        <param name="model_path" value="$(arg model_path)"/>
+        
+        <!-- Camera configuration -->
+        <param name="use_driveworks_camera" value="$(arg use_driveworks_camera)"/>
+        <param name="camera_params" value="$(arg camera_params)"/>
+        
+        <!-- Detection thresholds -->
+        <param name="confidence_threshold" value="$(arg confidence_threshold)"/>
+        <param name="detection_threshold" value="$(arg detection_threshold)"/>
+        <param name="quiet_mode" value="$(arg quiet_mode)"/>
+        
+        <!-- ROS camera fallback -->
+        <param name="image_topic" value="/camera/image_input"/>
+    </node>
+    
+    <!-- Object Tracking Node -->
+    <node name="tracking_node" pkg="drive_yolo" type="tracking_node" output="screen">
+        <!-- Tracking parameters -->
+        <param name="distance_threshold" value="$(arg distance_threshold)"/>
+        <param name="max_missed_frames" value="$(arg max_missed_frames)"/>
+        <param name="min_detections_for_tracking" value="$(arg min_detections_for_tracking)"/>
+        <param name="quiet_mode" value="$(arg quiet_mode)"/>
+    </node>
+    
+    <!-- Optional: Image publisher for testing without DriveWorks camera -->
+    <node name="image_publisher" pkg="drive_yolo" type="drive_yolo_image_publisher" 
+          if="$(eval not arg('use_driveworks_camera'))" output="screen">
+        <param name="image_path" value="image/test_image.png"/>
+        <param name="publish_rate" value="10.0"/>
+    </node>
+    
+    <!-- Optional: RViz for visualization -->
+    <!-- 
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find drive_yolo)/config/tracking_vis.rviz" 
+          if="$(arg use_rviz)" output="screen"/>
+    -->
+    
+    <!-- Optional: rqt_image_view for monitoring -->
+    <!--
+    <node name="image_view" pkg="image_view" type="image_view" if="$(arg show_images)">
+        <remap from="image" to="/camera/image_raw"/>
+    </node>
+    -->
+    
+</launch>

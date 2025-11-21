@@ -1,0 +1,29 @@
+<launch>
+    <!-- YOLO with ROS Camera Launch File -->
+    
+    <!-- Arguments for easy configuration -->
+    <arg name="model_path" default="$(find drive_yolo)/models/yolo11n.engine" />
+    <arg name="confidence_threshold" default="0.3" />
+    <arg name="detection_threshold" default="0.3" />
+    <arg name="quiet_mode" default="true" />
+    <arg name="image_topic" default="/camera/image_input" />
+    
+    <!-- YOLO Detection Node with ROS camera -->
+    <node name="drive_yolo_node" pkg="drive_yolo" type="drive_yolo_node" output="screen">
+        <!-- Model configuration -->
+        <param name="model_path" value="$(arg model_path)" />
+        
+        <!-- Camera configuration -->
+        <param name="use_driveworks_camera" value="false" />
+        <param name="image_topic" value="$(arg image_topic)" />
+        <param name="enable_hood_filtering" value="true"/>
+        <param name="ignore_hood_pixels" value="290"/>
+        <param name="enable_hood_filtering" value="true"/>
+        
+        <!-- Detection thresholds -->
+        <param name="confidence_threshold" value="$(arg confidence_threshold)" />
+        <param name="detection_threshold" value="$(arg detection_threshold)" />
+        <param name="quiet_mode" value="$(arg quiet_mode)" />
+    </node>
+    
+</launch>

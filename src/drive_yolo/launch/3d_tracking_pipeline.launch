@@ -1,0 +1,66 @@
+<launch>
+    <!-- 3D Tracking Pipeline Launch File -->
+    <!-- This assumes YOLO and Fusion are already running and focuses on 3D tracking + analysis -->
+    
+    <!-- 3D Tracking Arguments -->
+    <arg name="distance_threshold_3d" default="10.0" />        <!-- 2 meters for 3D association -->
+    <arg name="max_missed_frames" default="30" />
+    <arg name="min_detections_for_tracking" default="1" />
+    <arg name="min_lidar_points" default="5" />
+    <arg name="min_speed_threshold" default="0.1" />          <!-- 0.1 m/s minimum to be considered "moving" -->
+    <arg name="max_tracking_distance" default="250.0" />       <!-- Track objects up to 30m -->
+    <arg name="quiet_mode" default="false" />
+    <arg name="publish_all_tracks" default="true" />
+    <arg name="publish_high_quality_only" default="false" />
+    
+    <!-- Speed Monitor Arguments -->
+    <arg name="enable_speed_monitor" default="true" />
+    <arg name="speed_limit_ms" default="15" />             <!-- 50 km/h = 13.89 m/s -->
+    <arg name="warn_threshold_ms" default="11.11" />          <!-- 40 km/h = 11.11 m/s -->
+    <arg name="monitor_classes" default="0,1,2,3,5,7" />      <!-- person, bicycle, car, motorcycle, bus, truck -->
+    
+    <!-- 3D Object Tracking Node -->
+    <node name="tracking_3d_node" pkg="drive_yolo" type="drive_yolo_tracking_3d_node" output="screen">
+        <!-- 3D Tracking parameters -->
+        <param name="distance_threshold_3d" value="$(arg distance_threshold_3d)" />
+        <param name="max_missed_frames" value="$(arg max_missed_frames)" />
+        <param name="min_detections_for_tracking" value="$(arg min_detections_for_tracking)" />
+        <param name="min_lidar_points" value="$(arg min_lidar_points)" />
+        <param name="min_speed_threshold" value="$(arg min_speed_threshold)" />
+        <param name="max_tracking_distance" value="$(arg max_tracking_distance)" />
+        
+        <!-- Publishing options -->
+        <param name="quiet_mode" value="$(arg quiet_mode)" />
+        <param name="publish_all_tracks" value="$(arg publish_all_tracks)" />
+        <param name="publish_high_quality_only" value="$(arg publish_high_quality_only)" />
+    </node>
+    
+    <!-- Speed Monitor Node -->
+    <group if="$(arg enable_speed_monitor)">
+        <node name="speed_monitor_node" pkg="drive_yolo" type="drive_yolo_speed_monitor_node" output="screen">
+            <param name="speed_limit_ms" value="$(arg speed_limit_ms)" />
+            <param name="warn_threshold_ms" value="$(arg warn_threshold_ms)" />
+            <param name="monitor_classes" value="$(arg monitor_classes)" />
+            <param name="monitor_all_classes" value="false" />
+            <param name="quiet_mode" value="$(arg quiet_mode)" />
+        </node>
+    </group>
+    
+    <!-- Optional: Static TF Publishers for coordinate frames -->
+    <!-- Uncomment and adjust these if you need static transforms -->
+    <!--
+    <node name="tf_publisher_base_to_lidar" pkg="tf2_ros" type="static_transform_publisher"
+          args="0 0 1.383 0 0 0 car_rear_axle lidar" />
+    
+    <node name="tf_publisher_base_to_camera" pkg="tf2_ros" type="static_transform_publisher"
+          args="1.8 0 1.2 0 0 0 car_rear_axle camera_entron" />
+    -->
+    
+    <!-- Optional: RViz for 3D visualization -->
+    <arg name="use_rviz" default="false" />
+    <group if="$(arg use_rviz)">
+        <node name="rviz" pkg="rviz" type="rviz" output="screen"
+              args="-d $(find drive_yolo)/config/3d_tracking_vis.rviz" />
+    </group>
+    
+</launch>

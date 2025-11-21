@@ -1,0 +1,14 @@
+devel/
+build/
+install/
+install_isolated/
+devel_isolated/
+build_isolated/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
