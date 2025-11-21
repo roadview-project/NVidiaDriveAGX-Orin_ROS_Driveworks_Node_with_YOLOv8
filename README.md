@@ -296,6 +296,9 @@ to do that is simple simply use **ON THE DRIVE Orin**
   --workspace=4096 \
 ```
 
+Also I added the YOLOV8 engine it should work with it. but there is also the V11. the issue is that theres a difference and the detections are mangled when you use the wrong version
+I will add in the future a v11 branch, its already done i just need to push it.
+
 This runs at 30fps with yolo detections! ~faster then the nvidia rosnode (runs at 22fps) hehe cheeky no?~
 
 
@@ -847,15 +850,19 @@ geometry_msgs/Point predicted_position_1s
 
 Co-funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or European Climate, Infrastructure and Environment Executive Agency (CINEA). Neither the European Union nor the granting authority can be held responsible for them. Project grant no. 101069576. UK participants in this project are co-funded by Innovate UK under contract no.10045139. Swiss participants in this project are co-funded by the Swiss State Secretariat for Education, Research and Innovation (SERI) under contract no. 22.00123.
 
-I would also like to ack:
-- NVIDIA Corporation for DriveWorks SDK
+I would also like to acknoledge:
+- NVIDIA Corporation for DriveWorks SDK and the Lovely NVidia people at the Forum ^^.
 - Open Robotics for ROS framework
 - Ultralytics for YOLO models
+- Felix
 
 # Final Words
 please let me know if it works for you im curious. 
-I wish this helps you to develop for the NVIDIA DRIVE AGX ORIN WITH TENSORRT 
-hugs
-Yuri
-PS: if you use opset above 13 tensorrt will be upset
 
+I wish this helps you to develop for the NVIDIA DRIVE AGX ORIN WITH TENSORRT 
+
+hugs
+
+Yuri
+
+PS: if you use opset above 13 tensorrt will be upset
