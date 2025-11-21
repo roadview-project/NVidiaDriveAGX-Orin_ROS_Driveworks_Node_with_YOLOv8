@@ -2,7 +2,7 @@
     <!-- YOLO with DriveWorks Camera Launch File -->
     
     <!-- Arguments for easy configuration -->
-    <arg name="model_path" default="$(find drive_yolo)/models/yolo11n.engine" />
+    <arg name="model_path" default="$(find drive_yolo)/models/yolov8n.engine" />
     <arg name="confidence_threshold" default="0.1" />
     <arg name="detection_threshold" default="0.1" />
     <arg name="quiet_mode" default="true" />
