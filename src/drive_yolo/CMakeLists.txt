@@ -191,6 +191,16 @@ include_directories(
     ${CMAKE_FIND_ROOT_PATH}/usr/local/cuda-11.4/targets/aarch64-linux/include
 )
 
+# Add VIBRANTE version definitions for DRIVE OS 6.0.6
+# This ensures DriveWorks headers use the correct API version
+add_compile_definitions(
+    VIBRANTE_PDK_DECIMAL=6000600
+    VIBRANTE_PDK_VERSION=6.0.6.0
+    VIBRANTE
+)
+
+
+
 # Create the main YOLO executable
 add_executable(${PROJECT_NAME}_node 
     src/yolo_node.cpp 

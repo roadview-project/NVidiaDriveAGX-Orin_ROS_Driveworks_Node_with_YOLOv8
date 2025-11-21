@@ -66,8 +66,8 @@ string(REPLACE ";" " -Wl,-rpath," RPATH_FLAGS "${RUNTIME_PATHS}")
 set(RPATH_FLAGS "-Wl,-rpath,${RPATH_FLAGS}")
 
 # Compiler flags - added C++14 standard and other necessary flags
-set(CMAKE_C_FLAGS "-fPIC --sysroot=${CMAKE_SYSROOT} -g" CACHE INTERNAL "" FORCE)
-set(CMAKE_CXX_FLAGS "-fPIC --sysroot=${CMAKE_SYSROOT} -std=c++14 -g -fpermissive" CACHE INTERNAL "" FORCE)
+set(CMAKE_C_FLAGS "-fPIC --sysroot=${CMAKE_SYSROOT} -g -DVIBRANTE_PDK_DECIMAL=6000600 -DVIBRANTE" CACHE INTERNAL "" FORCE)
+set(CMAKE_CXX_FLAGS "-fPIC --sysroot=${CMAKE_SYSROOT} -std=c++14 -g -fpermissive -DVIBRANTE_PDK_DECIMAL=6000600 -DVIBRANTE" CACHE INTERNAL "" FORCE)
 
 # Linker flags - unified for all link types
 set(COMMON_LINK_FLAGS "--sysroot=${CMAKE_SYSROOT} ${LIB_SEARCH_FLAGS} ${RPATH_FLAGS} -Wl,--allow-shlib-undefined -Wl,--unresolved-symbols=ignore-in-shared-libs")
@@ -80,6 +80,8 @@ include_directories(BEFORE SYSTEM
     "${SYSROOT}/usr/include/aarch64-linux-gnu"
     "${DRIVEWORKS_ROOT}/include"
     "${SYSROOT}/usr/include/nvmedia_6x"
+    "${SYSROOT}/usr/include/nvsiplclient"  # NvSIPL headers for DRIVE OS 6.x
+    "${SYSROOT}/drive/drive-linux/include"  # Additional DRIVE OS headers
     "${CUDA_ROOT}/targets/aarch64-linux/include"
     "${TENSORRT_ROOT}/include/aarch64-linux-gnu"
 )
@@ -104,6 +106,6 @@ message(STATUS "  Compilers: ${CMAKE_C_COMPILER}, ${CMAKE_CXX_COMPILER}")
 message(STATUS "  Library paths: ${LIB_PATHS}")
 message(STATUS "  TensorRT root: ${TENSORRT_ROOT}")
 
-#list(PREPEND CMAKE_PREFIX_PATH 
-#    "/opt/ros/noetic" 
-#)
+list(PREPEND CMAKE_PREFIX_PATH 
+    "/opt/ros/noetic" 
+)
